@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ResourceBundle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,8 +25,11 @@ public class DataBaseTestConfig extends DataBaseConfig {
   public Connection getConnection() throws ClassNotFoundException, SQLException {
     logger.info("Create DB connection");
     Class.forName("com.mysql.cj.jdbc.Driver");
+    ResourceBundle rb = ResourceBundle.getBundle("config");
     return DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/test?serverTimezone=Europe/Paris", "root", "rootroot");
+            "jdbc:mysql://localhost:3306/test?serverTimezone=Europe/Paris", 
+            rb.getString("loginTest"), 
+            rb.getString("passwordTest"));
   }
 
   /**
