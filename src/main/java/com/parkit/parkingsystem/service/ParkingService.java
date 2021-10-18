@@ -1,5 +1,6 @@
 package com.parkit.parkingsystem.service;
 
+import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.constants.ParkingType;
 import com.parkit.parkingsystem.dao.ParkingSpotDAO;
 import com.parkit.parkingsystem.dao.TicketDAO;
@@ -24,6 +25,8 @@ public class ParkingService {
   private InputReaderUtil inputReaderUtil;
   private ParkingSpotDAO parkingSpotDAO;
   private  TicketDAO ticketDAO;
+  
+  private int pctDiscount = Fare.PCT_DISCOUNT_REC_USERS;
 
   /**
    * Constructor of ParkingService.
@@ -51,7 +54,8 @@ public class ParkingService {
     try {
       ParkingSpot parkingSpot = getNextParkingNumberIfAvailable();
       if (parkingSpot != null && parkingSpot.getId() > 0) {
-        final String vehicleRegNumber = getVehicleRegNumber();
+        String vehicleRegNumber = getVehicleRegNumber();
+        final int ticketsQuantity = ticketDAO.countByVehicleRegNumber(vehicleRegNumber);
         parkingSpot.setAvailable(false);
         parkingSpotDAO.updateParking(parkingSpot); /* allot this parking space and mark
                                                       it's availability as false */
@@ -62,8 +66,13 @@ public class ParkingService {
         ticket.setPrice(0);
         ticket.setInTime(inTime);
         ticket.setOutTime(null);
+        ticket.setDiscount((ticketsQuantity > 0) ? pctDiscount : 0);
         ticketDAO.saveTicket(ticket);
         System.out.println("Generated Ticket and saved in DB");
+        if (ticketsQuantity > 0) {
+          System.out.println("Welcome back! As a recurring user of our parking lot, "
+                               + "you'll benefit from a " + pctDiscount + "% discount.");
+        }
         System.out.println("Please park your vehicle in spot number:" + parkingSpot.getId());
         System.out.println("Recorded in-time for vehicle number:" + vehicleRegNumber
                            + " is:" + inTime);
@@ -129,9 +138,11 @@ public class ParkingService {
   public void processExitingVehicle() {
     try {
       String vehicleRegNumber = getVehicleRegNumber();
+      int ticketsQuantity = ticketDAO.countByVehicleRegNumber(vehicleRegNumber);
       Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
       Date outTime = new Date();
       ticket.setOutTime(outTime);
+      ticket.setDiscount((ticketsQuantity > 0) ? pctDiscount : 0);
       fareCalculatorService.calculateFare(ticket);
       if (ticketDAO.updateTicket(ticket)) {
         ParkingSpot parkingSpot = ticket.getParkingSpot();

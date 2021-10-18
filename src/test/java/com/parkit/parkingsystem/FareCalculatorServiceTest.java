@@ -163,4 +163,26 @@ public class FareCalculatorServiceTest {
     assertEquals(roundFare(24 * Fare.BIKE_RATE_PER_HOUR), ticket.getPrice());
   }
 
+  @Test
+  @DisplayName("Calculate 5% discount for recurring users")
+  public void calculateFivePercentDiscountForRecurringUsers() {
+    final int discount = Fare.PCT_DISCOUNT_REC_USERS;
+
+    Date inTime = new Date();
+    inTime.setTime(System.currentTimeMillis() - 60 * 60 * 1000); // 1 hour parking time
+
+    Date outTime = new Date();
+    ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+
+    ticket.setInTime(inTime);
+    ticket.setOutTime(outTime);
+    ticket.setParkingSpot(parkingSpot);
+    ticket.setDiscount(discount);
+
+    fareCalculatorService.calculateFare(ticket);
+
+    assertEquals(roundFare(Fare.CAR_RATE_PER_HOUR * (1 - 0.01 * discount)),
+            ticket.getPrice()); // 1 hour multiply by rate per hour, minus 5%
+  }
+
 }

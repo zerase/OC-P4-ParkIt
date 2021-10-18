@@ -76,4 +76,19 @@ public class ParkingServiceTest {
     verify(ticketDAO).saveTicket(any(Ticket.class));
   }
 
+  @Test
+  @DisplayName("Incoming recurring vehicle")
+  public void processIncomingRecurringVehicleTest() {
+    when(inputReaderUtil.readSelection()).thenReturn(1);
+    when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);
+    // simulate the presence of at least one ticket in DB
+    when(ticketDAO.countByVehicleRegNumber(anyString())).thenReturn(1);
+
+    parkingService.processIncomingVehicle();
+
+    verify(ticketDAO, Mockito.times(1)).countByVehicleRegNumber(anyString());
+    verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
+    verify(ticketDAO).saveTicket(any(Ticket.class));
+  }
+
 }

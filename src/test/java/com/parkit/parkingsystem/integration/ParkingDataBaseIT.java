@@ -3,6 +3,7 @@ package com.parkit.parkingsystem.integration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import com.parkit.parkingsystem.dao.ParkingSpotDAO;
@@ -90,6 +91,24 @@ public class ParkingDataBaseIT {
             0, ticketDAO.getTicket(inputReaderUtil.readVehicleRegistrationNumber()).getPrice());
     assertNotNull(
             ticketDAO.getTicket(inputReaderUtil.readVehicleRegistrationNumber()).getOutTime());
+  }
+
+  @Test
+  @DisplayName("Parking a recurring car")
+  public void testParkingRecurrentUser() throws Exception {
+    // Arrange : 
+    ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+    parkingService.processIncomingVehicle();
+    Thread.sleep(500);
+    parkingService.processExitingVehicle();
+    Thread.sleep(500);
+
+    // Act :
+    parkingService.processIncomingVehicle();
+
+    // Assert :
+    assertTrue(
+            ticketDAO.countByVehicleRegNumber(inputReaderUtil.readVehicleRegistrationNumber()) > 0);
   }
 
 }

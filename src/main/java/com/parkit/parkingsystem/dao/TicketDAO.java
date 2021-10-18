@@ -124,4 +124,35 @@ public class TicketDAO {
     return false;
   }
 
+  /**
+   * Checks whether or not a vehicle is recurring.
+   *
+   * @param vehicleRegNumber
+   *         a string value
+   * @return result
+   *         returns the number of tickets counted in database for a specific vehicle
+   */
+  public int countByVehicleRegNumber(String vehicleRegNumber) {
+    Connection con = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+    int result = 0;
+    try {
+      con = dataBaseConfig.getConnection();
+      ps = con.prepareStatement(DBConstants.COUNT_RECURRING_VEHICLE);
+      ps.setString(1, vehicleRegNumber);
+      rs = ps.executeQuery();
+      if (rs.next()) {
+        result = rs.getInt(1);
+      }
+    } catch (Exception ex) {
+      logger.error("Error counting tickets by Vehicle Reg Number", ex);
+    } finally {
+      dataBaseConfig.closeResultSet(rs);
+      dataBaseConfig.closePreparedStatement(ps);
+      dataBaseConfig.closeConnection(con);
+    }
+    return result;
+  }
+
 }

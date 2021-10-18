@@ -27,4 +27,8 @@ public class DBConstants {
           + "from ticket t, parking p "
           + "where p.PARKING_NUMBER = t.PARKING_NUMBER and t.VEHICLE_REG_NUMBER = ? "
           + "order by t.IN_TIME DESC limit 1";
+
+  public static final String COUNT_RECURRING_VEHICLE =
+          "select count(*) from ticket where VEHICLE_REG_NUMBER = ? and OUT_TIME is not null";
+
 }
